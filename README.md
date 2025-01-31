@@ -3,11 +3,17 @@ Z-Tech Electronics is a user-friendly e-commerce Flutter application where you c
 
 # Features:
 Categorized Product Browsing: Easily explore gadgets by categories.
+#
 Search Functionality: Search for products by name or category.
+#
 Cart Management: Add products to your cart and proceed with checkout.
+#
 Favorites: Save your favorite items for later.
+#
 Firebase Authentication: User login and registration with Firebase Authentication.
+#
 Firestore Integration: Data storage and management with Firestore.
+#
 State Management with Provider: Efficient state management for managing the app's state using Provider.
 
 # Screenshots 
