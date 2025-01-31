@@ -1,29 +1,16 @@
-<<<<<<< HEAD
-# ecomerce_app
+#Z-Tech Electronics
+Z-Tech Electronics is a user-friendly e-commerce Flutter application where you can browse and buy various electronic gadgets such as mobiles, laptops, smartwatches, earbuds, and more. The app has an awesome design, is fully integrated with Firebase, and allows users to add items to favorites and cart. With Firebase Authentication, users can securely log in and manage their accounts. The application uses Provider for efficient state management.
 
-A new Flutter project.
+#Features:
+Categorized Product Browsing: Easily explore gadgets by categories.
+Search Functionality: Search for products by name or category.
+Cart Management: Add products to your cart and proceed with checkout.
+Favorites: Save your favorite items for later.
+Firebase Authentication: User login and registration with Firebase Authentication.
+Firestore Integration: Data storage and management with Firestore.
+State Management with Provider: Efficient state management for managing the app's state using Provider.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
-# Ecomerce-App
-A Flutter e-commerce app with a clean UI, built using Provider for state management. It includes features like categorized product browsing, search, cart, favorites, and user authentication. 
->>>>>>> 988d321c3600e76355f2c5f99b84ee587d89ace0
-
-**Screens of Application**
-
-![Intro Page](screenshots/image1.png)
-#
-![Intro Page](screenshots/image2.png)
-#
-![Intro Page](screenshots/image3.png)
+  //![Intro Page](screenshots/image2.png)
+  // #
+  // ![Intro Page](screenshots/image3.png)
