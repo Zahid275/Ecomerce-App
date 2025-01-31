@@ -1,16 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecomerce_app/Provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class Itempage extends StatelessWidget {
-  final Map<String, dynamic> item;
+  final QueryDocumentSnapshot item;
 
   const Itempage({super.key, required this.item});
+
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<itemProvider>();
-    final listener = context.watch<itemProvider>();
+    final provider = context.read<ItemProvider>();
+    final listener = context.watch<ItemProvider>();
+
+    listener.borderColors;
+    listener.checkFav(item);
 
     return Scaffold(
       backgroundColor: Colors.purple.shade50,
@@ -23,78 +28,71 @@ class Itempage extends StatelessWidget {
           width: double.infinity,
           child: Row(
             children: [
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 flex: 5,
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 10),
                   height: 45,
-
                   decoration: BoxDecoration(
-                    border: Border.all(width: 1.5,color: Colors.white),
-                      color: Colors.purple,
-                      borderRadius: BorderRadius.circular(22)),
+                    border: Border.all(width: 1.5, color: Colors.white),
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(
-                          Icons.remove,
-                          size: 27,color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.remove, size: 27, color: Colors.white),
                         onPressed: () {
-                          listener.decrementQuantity();
-                        }
+                          provider.quantityDec();
+                        },
                       ),
                       Text(
                         "${listener.quantity}",
                         style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.w500,color: Colors.white),
+                            fontSize: 22, fontWeight: FontWeight.w500, color: Colors.white),
                       ),
                       IconButton(
-                        icon: const Icon(
-                          Icons.add,
-                          size: 27,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          listener.incrementQuantity();
+                        icon: const Icon(Icons.add, size: 27, color: Colors.white),
+                        onPressed: (){
+                          provider.quantityInc();
+                          // Increase quantity logic
                         },
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 flex: 7,
                 child: GestureDetector(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(duration : const Duration(milliseconds: 700 ),content: Text("${provider.quantity} ${item["name"]} ${provider.quantity ==1 ?"has been":"have been"} added to your cart")));
-
-                    provider.addToCart(item);///This function adds items to cart items
-
+                      SnackBar(
+                        duration: const Duration(milliseconds: 700),
+                        content: Text(
+                            "${provider.quantity} ${item["name"]} ${provider.quantity == 1 ? "has been" : "have been"} added to your cart"),
+                      ),
+                    );
+                    listener.addToCart(item: item,quantity: listener.quantity);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 20),
                     width: 150,
                     height: 55,
                     decoration: BoxDecoration(
-                        color: Colors.purple,
-                        borderRadius: BorderRadius.circular(22)),
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
                     child: const Center(
-                        child: Text(
-                      "Add to Cart",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500),
-                    )),
+                      child: Text(
+                        "Add to Cart",
+                        style: TextStyle(
+                            fontSize: 20, color: Colors.white, fontWeight: FontWeight.w500),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -112,21 +110,18 @@ class Itempage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 26),
               height: 250,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Image(
-                  fit: BoxFit.fill,
-                  image: AssetImage(
-                      "assets/home/${item["name"].toLowerCase()}.png")),
+              decoration: const BoxDecoration(color: Colors.white),
+              child: Image(fit: BoxFit.fill, image: NetworkImage(item["imageUrl"])),
             ),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
-                  borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(22),
-                      topLeft: Radius.circular(22))),
+                color: Colors.purple.shade50,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(22),
+                  topLeft: Radius.circular(22),
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.only(left: 20.0, top: 10),
                 child: SingleChildScrollView(
@@ -135,74 +130,60 @@ class Itempage extends StatelessWidget {
                     children: [
                       Text(
                         item["name"],
-                        style: GoogleFonts.gelasio(
-                            fontWeight: FontWeight.w700, fontSize: 26),
-                      ),
-                      Text(
-                        "Price : ${item["price"]}",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 20),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                              height: 30,
-                              width: 60,
-                              decoration: BoxDecoration(
-                                  color: Colors.purple.shade300,
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    size: 18,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(
-                                    width: 7,
-                                  ),
-                                  Text(
-                                    "4.5",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              )),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 20.0),
-                            child: Text(
-                              "Seller Name",
-                              style: GoogleFonts.gelasio(
-                                  fontSize: 20, fontWeight: FontWeight.w700),
-                            ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 12,
+                        style: GoogleFonts.gelasio(fontWeight: FontWeight.w700, fontSize: 26),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Colors :",
-                            style: GoogleFonts.gelasio(
-                                fontSize: 28, fontWeight: FontWeight.w700),
+                            "Price : ${item["price"]}",
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
                           ),
-                          IconButton(
-                            onPressed: (){
-                             listener.favFunction2(item);
-
-                            },
-                            icon: Icon(
-                              item["isFav"] ? Icons.favorite:Icons.favorite_outline_outlined, color:item["isFav"] ?Colors.red:Colors.black,
-                              size: 38,
+                          Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: IconButton(
+                              onPressed: () {
+                                listener.favToggle(item);
+                              },
+                              icon: Icon(
+                                Icons.favorite,
+                                size: 40,
+                                color: provider.isFav ? Colors.red : Colors.grey,
+                              ),
                             ),
-                          )
+                          ),
+                        ],
+                      ),
+
+                      Container(
+                        height: 30,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade300,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.star, size: 18, color: Colors.white),
+                            SizedBox(width: 7),
+                            Text(
+                              "4.5",
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Colors :",
+                            style: GoogleFonts.gelasio(fontSize: 28, fontWeight: FontWeight.w700),
+                          ),
+
                         ],
                       ),
                       SizedBox(
@@ -216,15 +197,14 @@ class Itempage extends StatelessWidget {
                           itemBuilder: (context, index) {
                             return GestureDetector(
                               onTap: () {
-                                (provider.changeColor(index: index));
+                                provider.changeColor(index: index);
                               },
                               child: Container(
                                 margin: const EdgeInsets.symmetric(horizontal: 5),
                                 decoration: BoxDecoration(
-                                    border: Border.all(
-                                        width: 3,
-                                        color: provider.borderColors[index]),
-                                    shape: BoxShape.circle),
+                                  border: Border.all(width: 3, color: listener.borderColors[index]),
+                                  shape: BoxShape.circle,
+                                ),
                                 child: CircleAvatar(
                                   backgroundColor: provider.colors[index],
                                 ),
@@ -233,20 +213,16 @@ class Itempage extends StatelessWidget {
                           },
                         ),
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
                       Text(
                         "Specifications :",
-                        style: GoogleFonts.gelasio(
-                            fontSize: 25, fontWeight: FontWeight.w700),
+                        style: GoogleFonts.gelasio(fontSize: 25, fontWeight: FontWeight.w700),
                       ),
-                      Container(
-                        child: Text(
+                     Text(
                           item["specs"],
                           style: const TextStyle(fontSize: 20),
                         ),
-                      )
+
                     ],
                   ),
                 ),

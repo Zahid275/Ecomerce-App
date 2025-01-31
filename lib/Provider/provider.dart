@@ -1,57 +1,246 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecomerce_app/Pages/homePage.dart';
 import 'package:ecomerce_app/Pages/accountPage.dart';
 import 'package:ecomerce_app/Pages/cartPage.dart';
 import 'package:ecomerce_app/Pages/favPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class itemProvider extends ChangeNotifier {
-  itemProvider() {
-    AddingItems();
-    filteredItems = showItemsList;
-
-  Timer(Duration(seconds: 1),(){FlutterNativeSplash.remove();});
+class ItemProvider extends ChangeNotifier {
+  ItemProvider() {
+    getStream();
+    getUserStream();
+    getFavStream();
+    getFavItems();
+    getCartStream();
+    Timer(const Duration(seconds: 1), () {
+      FlutterNativeSplash.remove();
+    });
   }
 
- String selectedColor = "White";
+/////////////////////////////////////////AuthPage Logic//////////////////////////////////////////////////////////////////////////
 
-  int quantity = 1;
+  String? name;
+  String? phoneNO;
+  String? address;
+  String? password;
+  String? email;
+  String? confirmPass;
+  bool isSignUp = false;
 
-  resetQuantity() {
-    quantity = 1;
+
+ bool obsecureTextPass = false;
+  bool obsecureTextCon = false;
+
+  togglePassIcon(){
+    obsecureTextPass = !obsecureTextPass;
+    notifyListeners();
   }
-
-  incrementQuantity() {
-    quantity = quantity + 1;
+  toggleConfirmPassIcon(){
+    obsecureTextCon = !obsecureTextCon;
     notifyListeners();
   }
 
-  decrementQuantity() {
-    if (quantity > 1) {
-      quantity = quantity - 1;
-      notifyListeners();
+
+  toggleSignUp() {
+    isSignUp = !isSignUp;
+
+    notifyListeners();
+  }
+
+
+  signIn(
+
+      {required String email,
+      required String password,
+      required context}) async {
+    toggleLogin();
+    if (email.toString() != "null" && password.toString() != "null") {
+      try {
+         await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
+
+      toggleLogin();
+      } catch (e) {
+        toggleLogin();
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      }
+    } else {
+      toggleLogin();
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Please enter all the required credentials")));
     }
   }
 
-  addToCart(Map item) {
-    cartItemList.add({
-      "name": item["name"],
-      "price": item["price"],
-      "specs": item["specs"],
-      "quantity": quantity,
-      "color": selectedColor
-    });
-    print(cartItemList);
+  signUp(
+      {required String email,
+      required String password,
+      required String name,
+      required String phoneNo,
+      required String address,
+      required String confirmPass,
+      required context}) async {
+    if (name.toString() != "null" &&
+        password.toString() != "null" &&
+        phoneNo.toString() != "null" &&
+        address.toString() != "null" &&
+        email.toString() != "null" &&
+        confirmPass.toString() != "null") {
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+        await FirebaseFirestore.instance
+            .collection("Users")
+            .doc(email.toString())
+            .set({
+          "email": email,
+          "password": password,
+          "name": name,
+          "address": address,
+          "Phone No": phoneNo
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(("$e"))));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text("Please write all the required credentials correctly")));
+    }
   }
 
-  deleteCartItem(int index) {
-    cartItemList.removeAt(index);
+  clearCredentials(){
+
+   name= null;
+   phoneNO= null;
+   address= null;
+   password= null;
+   email= null;
+   confirmPass= null;
+  }
+
+
+  ///SocialButton Custom Widget Function Based
+  Widget socialButton({
+    required imgPath,
+  }) {
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        height: 46,
+        width: 46,
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: const [
+              BoxShadow(blurRadius: 5, spreadRadius: 0.5, offset: Offset(1, 2))
+            ]),
+        child: Image.asset(imgPath),
+      ),
+    );
+  }
+
+  signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
+/////////////////////////////////////////HomePage Logic//////////////////////////////////////////////////////////////////////////
+
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? docs = [];
+  String currentCategory = "All";
+
+  upCatIndex(int index) {
+    categoryIndex = index;
+    if (categoryIndex == 0) {
+      currentCategory = "All";
+    } else if (categoryIndex == 1) {
+      currentCategory = "Mobile";
+    } else if (categoryIndex == 2) {
+      currentCategory = "Laptop";
+    } else if (categoryIndex == 3) {
+      currentCategory = "Smart Watch";
+    }
+
     notifyListeners();
   }
 
+  ///This function change the currentIndex of bottom Nav
+  int currentIndex = 0;
+
+  onChanged(int index) {
+    currentIndex = index;
+    notifyListeners();
+  }
+
+  List posters = [
+    "assets/posters/poster1.png",
+    "assets/posters/poster2.png",
+    "assets/posters/poster3.png"
+  ];
+
+  List catIcons = [
+    "assets/icons/all3.jpg",
+    "assets/icons/mobile.png",
+    "assets/icons/laptop.png",
+    "assets/icons/buds.png",
+    "assets/icons/smart watch.png"
+  ];
+  int categoryIndex = 0;
+
+  List<Widget> pages = [
+    const Homepage(),
+    const Cartpage(),
+    const FavPage(),
+     const Accountpage()
+  ];
+
+  Stream<QuerySnapshot<Map<String, dynamic>>>? getStream() {
+    if (categoryIndex == 0) {
+      return FirebaseFirestore.instance.collection("Producs").snapshots();
+    } else if (categoryIndex == 1) {
+      return FirebaseFirestore.instance
+          .collection("Producs")
+          .where("category", isEqualTo: "Mobile")
+          .snapshots();
+    } else if (categoryIndex == 2) {
+      return FirebaseFirestore.instance
+          .collection("Producs")
+          .where("category", isEqualTo: "Laptop")
+          .snapshots();
+    } else if (categoryIndex == 3) {
+      return FirebaseFirestore.instance
+          .collection("Producs")
+          .where("category", isEqualTo: "Earphone")
+          .snapshots();
+    } else {
+      return FirebaseFirestore.instance
+          .collection("Producs")
+          .where("category", isEqualTo: "Smart Watch")
+          .snapshots();
+    }
+  }
+
+  getDocs(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+    getStream()!.listen((snapshot) {
+      docs = snapshot.docs;
+    });
+  }
+
+/////////////////////////////////////////ItemPage Logic///////////////////////////////////////////////////////////////
+
+  String selectedColor = "White";
+  int quantity = 1;
+
   List<Color> colors = [Colors.white, Colors.black, Colors.blue, Colors.yellow];
-  List<String> realColors = ["white", "black", "blue","yellow"];
+  List<String> realColors = ["White", "Black", "Blue", "Yellow"];
 
   List<Color> borderColors = [
     Colors.pink,
@@ -59,6 +248,18 @@ class itemProvider extends ChangeNotifier {
     Colors.white,
     Colors.white,
   ];
+
+  quantityInc() {
+    quantity++;
+    notifyListeners();
+  }
+
+  quantityDec() {
+    if (quantity > 1) {
+      quantity = quantity - 1;
+    }
+    notifyListeners();
+  }
 
   ///this is a function for selecting colors of an item
   changeColor({required int index}) {
@@ -70,418 +271,522 @@ class itemProvider extends ChangeNotifier {
         }
         borderColors[i] = Colors.white;
       }
-    } else {
-      borderColors[index] = Colors.white;
     }
     selectedColor = realColors[index];
-    print(selectedColor);
     notifyListeners();
   }
 
   List<Map<String, dynamic>> cartItemList = [];
-  Set<Map<String, dynamic>> favItemSet = {};
-
-  List posters = [
-    "assets/posters/poster1.png",
-    "assets/posters/poster2.png",
-    "assets/posters/poster3.png"
-  ];
-
-  List CatIcons = [
-    "assets/icons/all3.jpg",
-    "assets/icons/mobile.png",
-    "assets/icons/laptop.png",
-    "assets/icons/buds.png",
-    "assets/icons/smart watch.png"
-  ];
-  int categoryIndex = 0;
-
-  List<Widget> Pages = [
-    Homepage(),
-    const Cartpage(),
-    const FavPage(),
-    const Accountpage()
-  ];
 
   num totalPrice = 0;
 
-  ///This function calculates the total price by adding the price and the product of price and quantity
-  TotalPrice() {
+/////////////////////////////////////////FavouritePage Logic//////////////////////////////////////////////////////////
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> favDocs = [];
+  Stream<QuerySnapshot<Map<String, dynamic>>>? favStream;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> favItems = [];
+  List<String> favItemsNames = [];
+
+  bool isFav = false;
+
+  getFavStream() async {
+    String email = await getEmail("email");
+
+    favStream = FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .collection("FavItems")
+        .snapshots();
+  }
+
+  getFavDocs(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+    favStream!.listen((snapshot) {
+      favDocs = snapshot.docs;
+    });
+    getFavNames();
+  }
+
+  getFavItems() async {
+    String email = await getEmail("email");
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .collection("FavItems")
+        .get()
+        .then((snapshot) {
+      favDocs = snapshot.docs;
+    });
+    getFavNames();
+  }
+
+  ///For adding and deleting items of favourites from item Page
+  favToggle(final item) async {
+    String email = await getEmail("email");
+
+    if (favItemsNames.contains(item["name"])) {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(email)
+          .collection("FavItems")
+          .doc(item["name"])
+          .delete();
+
+      favItemsNames.remove(item["name"]);
+    } else {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(email)
+          .collection("FavItems")
+          .doc(item["name"])
+          .set({
+        "color": selectedColor,
+        "specs": item["specs"],
+        "name": item["name"],
+        "price": item["price"],
+        "category": item["category"],
+        "imageUrl": item["imageUrl"]
+      });
+      favItemsNames.add(item["name"]);
+    }
+
+    notifyListeners();
+  }
+
+  getFavNames() {
+    favItemsNames = favDocs.map((doc) => doc["name"].toString()).toList();
+  }
+
+  checkFav(final item) {
+
+    if (favItemsNames.contains(item["name"])) {
+      isFav = true;
+      return isFav;
+    } else {
+      isFav = false;
+      return isFav;
+    }
+  }
+
+  ///Deleting Fav item
+  deleteFav(int index) async {
+    String email = await getEmail("email");
+
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .collection("FavItems")
+        .doc(favDocs.toList()[index]["name"])
+        .delete();
+
+    notifyListeners();
+  }
+
+/////////////////////////////////////////CartPage Logic////////////////////////////////////////////////////////////////////////
+
+  Stream<QuerySnapshot<Map<String, dynamic>>>? cartStream;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> cartDocs = [];
+
+  totalPriceCalculate() {
     totalPrice = 0;
-    for (int i = 0; i < cartItemList.length; i++) {
-      if (cartItemList[i]["price"] != null) {
+    for (int i = 0; i < cartDocs.length; i++) {
+      if (cartDocs[i]["price"] != null) {
         totalPrice =
-            totalPrice + cartItemList[i]["price"] * cartItemList[i]["quantity"];
+            totalPrice + cartDocs[i]["price"] * cartDocs[i]["quantity"];
       }
-      print(totalPrice);
     }
     return totalPrice;
   }
 
-  UpCatIndex(int index) {
-    categoryIndex = index;
-    notifyListeners();
+  getCartStream() async {
+    String email = await getEmail("email");
 
-
+    cartStream = FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .collection("CartItems")
+        .snapshots();
   }
 
-  List<Map<String, dynamic>> showItemsList = [];
-  List<List<Map<String, dynamic>>> itemsInfo = [
-    /// For Mobiles
-    [
-      {
-        "name": "Realme 12",
-        "price": 80000,
-        "specs":
-            "6.5-inch display, 108MP camera, 5000mAh battery, Snapdragon 8 Gen 1",
-        "isFav": false
-      },
-      {
-        "name": "Samsung Galaxy A55",
-        "price": 80000,
-        "specs": "6.6-inch display, 64MP camera, 5000mAh battery, Exynos 1280",
-        "isFav": false
-      },
-      {
-        "name": "Samsung Galaxy S22 Ultra",
-        "price": 200000,
-        "specs":
-            "6.8-inch display, 108MP camera, 5000mAh battery, Snapdragon 8 Gen 1",
-        "isFav": false
-      },
-      {
-        "name": "Samsung Galaxy A54",
-        "price": 70000,
-        "specs": "6.4-inch display, 50MP camera, 5000mAh battery, Exynos 1380",
-        "isFav": false
-      },
-      {
-        "name": "Xiaomi Redmi 10C",
-        "price": 29999,
-        "specs": "6.7-inch display, 50MP camera, 5000mAh battery, Snapdragon 680",
-        "isFav": false
-      },
-      {
-        "name": "Xiaomi Redmi 13 Pro Plus",
-        "price": 50000,
-        "specs":"6.73-inch display, 200MP camera, 5100mAh battery, MediaTek Dimensity 9200+",
-        "isFav": false
-      },
-      {
-        "name": "Xiaomi 12",
-        "price": 30000,
-        "specs":"6.28-inch display, 50MP camera, 4500mAh battery, Snapdragon 8 Gen 1",
-        "isFav": false
-      },
-    ],
-
-    /// For Laptop
-    [
-      {
-        "name": "Acer Aspire 5",
-        "price": 115000,
-        "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Dell Inspiron 7430",
-        "price": 130000,
-        "specs": "14-inch display, Intel i7 13th Gen, 16GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Dell Latitude 15 3540",
-        "price": 100000,
-        "specs": "15.6-inch display, Intel i5 13th Gen, 8GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Dell Latitude 3540",
-        "price": 95000,
-        "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 256GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Dell Vostro 3520",
-        "price": 90000,
-        "specs": "15.6-inch display, Intel i5 11th Gen, 8GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "HP EliteBook 640",
-        "price": 120000,
-        "specs": "14-inch display, Intel i5 13th Gen, 16GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "HP 15-FD0334 NIA",
-        "price": 70000,
-        "specs": "15.6-inch display, Intel i3 11th Gen, 8GB RAM, 256GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "HP 15s EQ2322 AU",
-        "price": 75000,
-        "specs": "15.6-inch display, AMD Ryzen 5 5500U, 8GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Lenovo Ideapad 3",
-        "price": 80000,
-        "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 512GB SSD",
-        "isFav": false
-      },
-      {
-        "name": "Lenovo Thinkpad E16",
-        "price": 150000,
-        "specs": "16-inch display, Intel i7 13th Gen, 16GB RAM, 1TB SSD",
-        "isFav": false
-      },
-    ],
-
-    /// For Buds
-    [
-      {
-        "name": "Ronin R-520 Earbuds",
-        "price": 4100,
-        "specs": "Bluetooth 5.0, 4-hour battery, water-resistant",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-7020 Earbuds",
-        "price": 6000,
-        "specs": "Bluetooth 5.0, 5-hour battery, noise cancellation",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-7025 Earbuds",
-        "price": 6200,
-        "specs": "Bluetooth 5.0, 5-hour battery, water-resistant",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-1500 Headphone",
-        "price": 3200,
-        "specs": "Wired, over-ear, 40mm drivers",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-710 Earbuds",
-        "price": 5000,
-        "specs": "Bluetooth 5.0, 6-hour battery, sweat-proof",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-140 Earbuds",
-        "price": 6000,
-        "specs": "Bluetooth 5.0, 7-hour battery, noise cancellation",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-190 Earbuds",
-        "price": 5000,
-        "specs": "Bluetooth 5.0, 6-hour battery, water-resistant",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-540 Earbuds",
-        "price": 4100,
-        "specs": "Bluetooth 5.0, 4-hour battery, ergonomic fit",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-570 Earbuds",
-        "price": 4500,
-        "specs": "Bluetooth 5.0, 5-hour battery, noise cancellation",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R-740 Earbuds",
-        "price": 6200,
-        "specs": "Bluetooth 5.0, 7-hour battery, water-resistant",
-        "isFav": false
-      },
-    ],
-
-    /// For Smart Watches
-    [
-      {
-        "name": "Ronin R06 Smart Watch",
-        "price": 4000,
-        "specs": "1.3-inch display, heart rate monitor, IP67 rating",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R08 Smart Watch",
-        "price": 4500,
-        "specs": "1.4-inch display, fitness tracking, water-resistant",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R09 Smart Watch",
-        "price": 6000,
-        "specs": "1.4-inch display, heart rate monitor, Bluetooth calling",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R02 Smart Watch",
-        "price": 2000,
-        "specs": "1.2-inch display, fitness tracking, IP67 rating",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R04 Smart Watch",
-        "price": 3000,
-        "specs": "1.3-inch display, heart rate monitor, water-resistant",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R010 Smart Watch",
-        "price": 8000,
-        "specs": "1.5-inch display, Bluetooth calling, IP68 rating",
-        "isFav": false
-      },
-      {
-        "name": "Ronin R012 Smart Watch",
-        "price": 10000,
-        "specs": "1.6-inch display, fitness tracking, Bluetooth calling",
-        "isFav": false
-      },
-    ],
-  ];
-
-  ///This function add the items to list which is being shown according to the category inddex
-  AddingItems() {
-    showItemsList.clear();
-    if (categoryIndex == 0) {
-      for (int i = 0; i < itemsInfo.length; i++) {
-        showItemsList.addAll(itemsInfo[i]);
-      }
-    } else {
-      showItemsList.addAll(itemsInfo[categoryIndex - 1]);
-    }
-    notifyListeners();
+  getCartDocs(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+    cartStream!.listen((snapshot) {
+      cartDocs = snapshot.docs;
+    });
   }
 
-  ///This function change the currentIndex of bottom Nav
-  int currentIndex = 0;
-  onChanged(int index) {
-    currentIndex = index;
-    notifyListeners();
-  }
-
-  ///For deleting items of favourites from favourite pages
-  deleteFavItem(int index) {
-    favItemSet.toList()[index]["isFav"] = false;
-    favItemSet.remove(favItemSet.toList()[index]);
-    notifyListeners();
-  }
-
-  ///For adding  and deleting items of favourites from HomePage Page
-
-  favFunction1({required int index}) {
-    if (filteredItems[index]["isFav"] == false) {
-      filteredItems[index]["isFav"] = true;
-      favItemSet.add(filteredItems[index]);
-    } else {
-      filteredItems[index]["isFav"] = false;
-      favItemSet.remove(filteredItems[index]);
+  addToCart({required item, required quantity}) async {
+      String email = await getEmail("email");
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(email)
+          .collection("CartItems")
+          .doc(item["name"])
+          .set({
+        "quantity": quantity,
+        "color": selectedColor,
+        "specs": item["specs"],
+        "name": item["name"],
+        "price": item["price"],
+        "category": item["category"],
+        "imageUrl": item["imageUrl"]
+      });
     }
 
+  deleterCartItem(int index) async {
+    String email = await getEmail("email");
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .collection("CartItems")
+        .doc(cartDocs[index].id)
+        .delete();
     notifyListeners();
   }
 
-  ///For adding and deleting items of favourites from item Page
-  favFunction2(Map<String, dynamic> item) {
-    if (item["isFav"] == false) {
-      item["isFav"] = true;
-      favItemSet.add(item);
-    } else {
-      item["isFav"] = false;
-      favItemSet.remove(item);
-    }
-    notifyListeners();
-  }
-////////////////////////////////////////////////////////////////////
-  ///Search bar Logic
+/////////////////////////////////////////SearchBar Logic/////////////////////////////////////////////////////////////////////////
 
   String query = "";
 
-  List<Map<String, dynamic>> filteredItems = [];
+  List filteredItems = [];
   String searchQuery = '';
 
-//Filter Function
-  filterFunction(String query) {
-    if (query.isNotEmpty) {
-      searchQuery = query.toLowerCase();
-      filteredItems = showItemsList.where((item) {
-        return item["name"].toString().toLowerCase().contains(searchQuery);
-      }).toList();
-    } else {
-      filteredItems = showItemsList;
-    }
+  ///Filter Function
+//   filterFunction(String query) {
+//     if (query.isNotEmpty) {
+//       searchQuery = query.toLowerCase();
+//
+//       filteredItems = docs.where((item) {
+//         return item["name"].toString().toLowerCase().contains(searchQuery);
+//       }).toList();
+//
+//     } else {
+//       filteredItems = docs;
+//       print(filteredItems[0].id);
+//     }
+//     notifyListeners();
+//   }
+
+  /////////////////////////////////////AccountPage Logic///////////////////////////////////////////////////////
+
+  Map<String, dynamic>? userDocs={};
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? userStream;
+  getUserStream() async {
+    String email = await getEmail("email");
+    userStream =
+        FirebaseFirestore.instance.collection("Users").doc(email).snapshots();
+  }
+
+  getUserDocs(AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot)async {
+      userDocs =  snapshot.data?.data();
+
+  }
+
+
+  /////////////////////////////////////Shared Preference ///////////////////////////////////////////////////////
+
+
+  //adding email to local db
+  setEmail(String userEmail) async {
+    final db = await SharedPreferences.getInstance();
+    await db.setString("email", userEmail);
+  }
+
+
+  //getting email from local db
+  getEmail(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    String email = prefs.getString(key).toString();
+    return email;
+  }
+
+
+  bool isLoading = false;
+
+  toggleLogin(){
+    isLoading = !isLoading;
     notifyListeners();
-  }
 
-////////////////////////////////////////////////////////////////////////////////
-  ///Login Sign up functions and variables
-  final nameController = TextEditingController();
-  final passController = TextEditingController();
-  final emailController = TextEditingController();
-  final confirmPassController = TextEditingController();
-
-  Widget cusTomTextField(
-      {controller,
-      required String label,
-      required IconData prefixIcon,
-      required Icon suffixIcon,
-      obsecure = false}) {
-    return Container(
-      width: 360,
-      height: 47,
-      child: TextField(
-        controller: controller,
-        obscureText: obsecure,
-        decoration: InputDecoration(
-          prefixIcon: Icon(prefixIcon),
-          suffixIcon: suffixIcon,
-          hintText: label,
-          hintStyle: TextStyle(color: Colors.grey.shade400),
-          border: OutlineInputBorder(),
-          enabledBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: Colors.deepPurple.shade300, width: 2),
-              borderRadius: BorderRadius.circular(12)),
-          focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: Colors.deepPurple.shade300, width: 2),
-              borderRadius: BorderRadius.circular(12)),
-          disabledBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: Colors.deepPurple.shade300, width: 2),
-              borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
-    );
   }
 }
 
-///SocialButton Custom Widget Function Based
-Widget socialButton({
-  required imgPath,
-}) {
-  return GestureDetector(
-    onTap: () {},
-    child: Container(
-      child: Image.asset(imgPath),
-      height: 46,
-      width: 46,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(blurRadius: 5, spreadRadius: 0.5, offset: Offset(1, 2))
-          ]),
-    ),
-  );
-}
+
+
+
+
+//
+//
+// List<List<Map<String, dynamic>>> itemsInfo = [
+//   /// For Mobiles
+//   [
+//     {
+//       "name": "Realme 12",
+//       "price": 80000,
+//       "specs":
+//       "6.5-inch display, 108MP camera, 5000mAh battery, Snapdragon 8 Gen 1",
+//       "isFav": false,
+//       "imageUrl":"https://res.cloudinary.com/dz6supklb/image/upload/v1737043323/xiaomi_12_czsbyo.jpg",
+//       "category":"Mobile"
+//
+//
+//     },
+//     {
+//       "name": "Samsung Galaxy A55",
+//       "price": 80000,
+//       "specs": "6.6-inch display, 64MP camera, 5000mAh battery, Exynos 1280",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043322/samsung_galaxy_a55_hs4gng.webp",
+//     },
+//     {
+//       "name": "Samsung Galaxy S22 Ultra",
+//       "price": 200000,
+//       "specs":
+//       "6.8-inch display, 108MP camera, 5000mAh battery, Snapdragon 8 Gen 1",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043323/samsung_galaxy_s22_ultra_axrbzf.jpg"
+//     },
+//     {
+//       "name": "Samsung Galaxy A54",
+//       "price": 70000,
+//       "specs": "6.4-inch display, 50MP camera, 5000mAh battery, Exynos 1380",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043322/samsung_galaxy_a54_zq6cpo.jpg"
+//     },
+//     {
+//       "name": "Xiaomi Redmi 10C",
+//       "price": 29999,
+//       "specs":
+//       "6.7-inch display, 50MP camera, 5000mAh battery, Snapdragon 680",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043324/xiaomi_redmi_10c_htwqst.jpg"
+//     },
+//     {
+//       "name": "Xiaomi Redmi 13 Pro Plus",
+//       "price": 50000,
+//       "specs":
+//       "6.73-inch display, 200MP camera, 5100mAh battery, MediaTek Dimensity 9200+",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043327/xiaomi_redmi_13_pro_plus_vjsscs.webp"
+//     },
+//     {
+//       "name": "Xiaomi 12",
+//       "price": 30000,
+//       "specs":
+//       "6.28-inch display, 50MP camera, 4500mAh battery, Snapdragon 8 Gen 1",
+//       "isFav": false,       "category": "Mobile",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043325/xiaomi_redmi_12_ultra_uygity.jpg"
+//     },
+//   ],
+//
+//   /// For Laptop
+//   [
+//     {
+//       "name": "Acer Aspire 5",
+//       "price": 115000,
+//       "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 512GB SSD",
+//       "isFav": false,       "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043316/acer_aspire_5_rm2aof.webp"
+//     },
+//     {
+//       "name": "Dell Inspiron 7430",
+//       "price": 130000,
+//       "specs": "14-inch display, Intel i7 13th Gen, 16GB RAM, 512GB SSD",
+//       "isFav": false,      "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043313/dell_inspiron_7430_en2fax.webp"
+//     },
+//     {
+//       "name": "Dell Latitude 15 3540",
+//       "price": 100000,
+//       "specs": "15.6-inch display, Intel i5 13th Gen, 8GB RAM, 512GB SSD",
+//       "isFav": false,       "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043313/dell_latitude_15_3540_ttiack.webp"
+//     },
+//     {
+//       "name": "Dell Latitude 3540",
+//       "price": 95000,
+//       "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 256GB SSD",
+//       "isFav": false,       "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043313/dell_latitude_3540_e8i1s0.webp"
+//     },
+//     {
+//       "name": "Dell Vostro 3520",
+//       "price": 90000,
+//       "specs": "15.6-inch display, Intel i5 11th Gen, 8GB RAM, 512GB SSD",
+//       "isFav": false,        "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043313/dell_vostro_3520_c4bjhw.webp"
+//     },
+//     {
+//       "name": "HP EliteBook 640",
+//       "price": 120000,
+//       "specs": "14-inch display, Intel i5 13th Gen, 16GB RAM, 512GB SSD",
+//       "isFav": false,      "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043314/hp_elitebook_640_okzfsb.webp"
+//     },
+//     {
+//       "name": "HP 15-FD0334 NIA",
+//       "price": 70000,
+//       "specs": "15.6-inch display, Intel i3 11th Gen, 8GB RAM, 256GB SSD",
+//       "isFav": false,       "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043314/hp_15-fd0334_nia_cgrmui.webp"
+//     },
+//     {
+//       "name": "HP 15s EQ2322 AU",
+//       "price": 75000,
+//       "specs": "15.6-inch display, AMD Ryzen 5 5500U, 8GB RAM, 512GB SSD",
+//       "isFav": false,      "category": "Laptop",
+//
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043313/hp_15s_eq2322_au_ptfzsk.webp"
+//     },
+//     {
+//       "name": "Lenovo Ideapad 3",
+//       "price": 80000,
+//       "specs": "15.6-inch display, Intel i5 12th Gen, 8GB RAM, 512GB SSD",
+//       "isFav": false, "category": "Laptop",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043314/lenovo_ideapad_3_yzh5gv.webp"
+//     },
+//     {
+//       "name": "Lenovo Thinkpad E16",
+//       "price": 150000,
+//       "specs": "16-inch display, Intel i7 13th Gen, 16GB RAM, 1TB SSD",
+//       "isFav": false, "category": "Laptop",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043315/lenovo_thinkpad_e16_ord7of.webp"
+//     },
+//   ],
+//
+//   /// For Buds
+//   [
+//     {
+//       "name": "Ronin R-520 Earbuds",
+//       "price": 4100,
+//       "specs": "Bluetooth 5.0, 4-hour battery, water-resistant",
+//       "isFav": false, "category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043321/ronin_r-520_earbuds_umvmyt.webp"
+//     },
+//     {
+//       "name": "Ronin R-7020 Earbuds",
+//       "price": 6000,
+//       "specs": "Bluetooth 5.0, 5-hour battery, noise cancellation",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043323/ronin_r-7020_earbuds_nibbnv.webp"
+//     },
+//     {
+//       "name": "Ronin R-7025 Earbuds",
+//       "price": 6200,
+//       "specs": "Bluetooth 5.0, 5-hour battery, water-resistant",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl":"https://res.cloudinary.com/dz6supklb/image/upload/v1737043322/ronin_r-7025_earbuds_gat5ta.webp"
+//     },
+//     {
+//       "name": "Ronin R-1500 Headphone",
+//       "price": 3200,
+//       "specs": "Wired, over-ear, 40mm drivers",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043321/ronin_r-1500_headphone_neemoq.webp"
+//     },
+//     {
+//       "name": "Ronin R-710 Earbuds",
+//       "price": 5000,"category": "Earphone",
+//       "specs": "Bluetooth 5.0, 6-hour battery, sweat-proof",
+//       "isFav": false,
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043321/ronin_r-710_earbuds_tpoqx4.webp"
+//     },
+//     {
+//       "name": "Ronin R-140 Earbuds",
+//       "price": 6000,
+//       "specs": "Bluetooth 5.0, 7-hour battery, noise cancellation",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043317/ronin_r-140_earbuds_hkjexi.webp"
+//     },
+//     {
+//       "name": "Ronin R-190 Earbuds",
+//       "price": 5000,
+//       "specs": "Bluetooth 5.0, 6-hour battery, water-resistant",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043320/ronin_r-190_earbuds_h7taqi.webp"
+//     },
+//     {
+//       "name": "Ronin R-540 Earbuds",
+//       "price": 4100,
+//       "specs": "Bluetooth 5.0, 4-hour battery, ergonomic fit",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043321/ronin_r-540_earbuds_qs6zqo.webp"
+//     },
+//     {
+//       "name": "Ronin R-570 Earbuds",
+//       "price": 4500,
+//       "specs": "Bluetooth 5.0, 5-hour battery, noise cancellation",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043322/ronin_r-570_earbuds_avrnke.webp"
+//     },
+//     {
+//       "name": "Ronin R-740 Earbuds",
+//       "price": 6200,
+//       "specs": "Bluetooth 5.0, 7-hour battery, water-resistant",
+//       "isFav": false,"category": "Earphone",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043321/ronin_r-740_earbuds_hkvnd9.webp"
+//     },
+//   ],
+//
+//   /// For Smart Watches
+//   [
+//     {
+//       "name": "Ronin R06 Smart Watch",
+//       "price": 4000,
+//       "specs": "1.3-inch display, heart rate monitor, IP67 rating",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043315/ronin_r06_smart_watch_ruup2o.webp"
+//     },
+//     {
+//       "name": "Ronin R08 Smart Watch",
+//       "price": 4500,
+//       "specs": "1.4-inch display, fitness tracking, water-resistant",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043316/ronin_r08_smart_watch_y3wwm4.webp"
+//     },
+//     {
+//       "name": "Ronin R09 Smart Watch",
+//       "price": 6000,
+//       "specs": "1.4-inch display, heart rate monitor, Bluetooth calling",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl":"https://res.cloudinary.com/dz6supklb/image/upload/v1737043316/ronin_r09_smart_watch_rxxwnr.webp"
+//     },
+//     {
+//       "name": "Ronin R02 Smart Watch",
+//       "price": 2000,
+//       "specs": "1.2-inch display, fitness tracking, IP67 rating",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043315/ronin_r02_smart_watch_l1rxlc.webp"
+//     },
+//     {
+//       "name": "Ronin R04 Smart Watch",
+//       "price": 3000,
+//       "specs": "1.3-inch display, heart rate monitor, water-resistant",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043315/ronin_r04_smart_watch_yf7e5p.webp"
+//     },
+//     {
+//       "name": "Ronin R010 Smart Watch",
+//       "price": 8000,
+//       "specs": "1.5-inch display, Bluetooth calling, IP68 rating",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043316/ronin_r010_smart_watch_tkmfwp.webp"
+//     },
+//     {
+//       "name": "Ronin R012 Smart Watch",
+//       "price": 10000,
+//       "specs": "1.6-inch display, fitness tracking, Bluetooth calling",
+//       "isFav": false,"category": "Smart Watch",
+//       "imageUrl": "https://res.cloudinary.com/dz6supklb/image/upload/v1737043317/ronin_r012_smart_watch_u4scxb.webp"
+//     },
+//   ],
+// ];

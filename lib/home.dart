@@ -4,14 +4,16 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatelessWidget {
-  Color selectedColor = Colors.deepPurple;
+
+  const Home({super.key});
 
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<itemProvider>(
+    return Consumer<ItemProvider>(
       builder: (context, provider, child) {
         return Scaffold(
+
             backgroundColor: Colors.grey.shade300,
             bottomNavigationBar: Container(
               height: 80,
@@ -52,7 +54,7 @@ class Home extends StatelessWidget {
                 },
               ),
             ),
-            body: provider.Pages[provider.currentIndex]);
+            body: provider.pages[provider.currentIndex]);
       },
     );
   }

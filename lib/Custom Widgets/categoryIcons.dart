@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class Categoryicons extends StatelessWidget {
+class CategoryIcons extends StatelessWidget {
 
-  String imgPath;
-  void Function()? onTap;
-  Color backColor;
-  Categoryicons({super.key, required this.imgPath,required this.onTap,required this.backColor});
+ final  String imgPath;
+  final void Function()? onTap;
+  final Color backColor;
+  const CategoryIcons({super.key, required this.imgPath,required this.onTap,required this.backColor});
   @override
   Widget build(BuildContext context) {
     return   Column(
