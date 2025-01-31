@@ -19,3 +19,11 @@ samples, guidance on mobile development, and a full API reference.
 # Ecomerce-App
 A Flutter e-commerce app with a clean UI, built using Provider for state management. It includes features like categorized product browsing, search, cart, favorites, and user authentication. 
 >>>>>>> 988d321c3600e76355f2c5f99b84ee587d89ace0
+
+**Screens of Application**
+
+![Intro Page](screenshots/image1.png)
+#
+![Intro Page](screenshots/image2.png)
+#
+![Intro Page](screenshots/image3.png)
