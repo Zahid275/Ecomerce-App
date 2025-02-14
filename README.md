@@ -1,20 +1,23 @@
-# Z-Tech Electronics
-Z-Tech Electronics is a user-friendly e-commerce Flutter application where you can browse and buy various electronic gadgets such as mobiles, laptops, smartwatches, earbuds, and more. The app has an awesome design, is fully integrated with Firebase, and allows users to add items to favorites and cart. With Firebase Authentication, users can securely log in and manage their accounts. The application uses Provider for efficient state management.
+# 🛒 E-Commerce App  
 
-# Features:
-Categorized Product Browsing: Easily explore gadgets by categories.
-#
-Search Functionality: Search for products by name or category.
-#
-Cart Management: Add products to your cart and proceed with checkout.
-#
-Favorites: Save your favorite items for later.
-#
-Firebase Authentication: User login and registration with Firebase Authentication.
-#
-Firestore Integration: Data storage and management with Firestore.
-#
-State Management with Provider: Efficient state management for managing the app's state using Provider.
+A modern e-commerce app built with **Flutter**, **Firebase**, and **Provider** for smooth performance and seamless shopping experience.  
+
+
+- 🛍 **Categorized Product Browsing** – Easily explore gadgets by categories.  
+- 🔍 **Search Functionality** – Find products quickly by name or category.  
+- 🛒 **Cart Management** – Add products to your cart & proceed to checkout.  
+- ❤️ **Favorites** – Save your favorite items for later.  
+- 🔐 **Firebase Authentication** – Secure login & registration with Firebase.  
+- 📦 **Firestore Integration** – Store & manage data seamlessly with Firestore.  
+- ⚡ **State Management with Provider** – Smooth and efficient app state handling.  
+
+## 🏗 Tech Stack  
+
+- **Flutter** – Cross-platform UI framework  
+- **Dart** – Programming language  
+- **Firebase Authentication** – User authentication  
+- **Firestore** – Cloud database  
+- **Provider** – State management  
 
 # Screenshots 
   //![Intro Page](screenshots/image2.png)
