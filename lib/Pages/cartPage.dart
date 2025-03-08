@@ -1,3 +1,4 @@
+import 'package:ecomerce_app/Models/cartModel.dart';
 import 'package:ecomerce_app/Pages/itemPage.dart';
 import 'package:ecomerce_app/Provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -30,9 +31,7 @@ class Cartpage extends StatelessWidget {
               provider.getCartStream();
               listener.getCartDocs(snapshot);
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (provider.cartDocs.isEmpty) {
+        if (provider.cartDocs.isEmpty) {
                 return const Center(child: Text("Not items in cart"));
               } else {
                 return Column(children: [
@@ -40,21 +39,24 @@ class Cartpage extends StatelessWidget {
                     child: ListView.builder(
                         itemCount: provider.cartDocs.length,
                         itemBuilder: (context, index) {
-                          return CartItem(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context){
-                                return Itempage(item: provider.cartDocs[index]);
-                              }));
-                            },
-                            color: provider.cartDocs[index]["color"],
-                            itemPrice: provider.cartDocs[index]["price"],
-                            imgPath: provider.cartDocs[index]["imageUrl"],
-                            quantity: provider.cartDocs[index]["quantity"],
-                            itemName: '${provider.cartDocs[index]["name"]}',
-                            deleteItem: () {
-                              listener.deleterCartItem(index);
-                            },
+
+
+                          CartModel cartModel = CartModel(
+                              onTap:(){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return ItemPage(item: provider.cartDocs[index]);
+                                }));},
+                              color: provider.cartDocs[index]["color"],
+                              itemPrice: provider.cartDocs[index]["price"],
+                              imgPath: provider.cartDocs[index]["imageUrl"],
+                              quantity: provider.cartDocs[index]["quantity"],
+                              itemName: '${provider.cartDocs[index]["name"]}',
+                              deleteItem: () {
+                                listener.deleterCartItem(index);
+                              },
                           );
+                          return CartItem(cartModel: cartModel);
+
                         }),
                   ),
                   Padding(

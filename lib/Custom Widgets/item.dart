@@ -1,22 +1,11 @@
+import 'package:ecomerce_app/Models/itemModel.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Item extends StatelessWidget {
-  final String? imgPath;
-  final String? itemName;
-  final int? itemPrice;
-  final void Function()? onTap;
-  final void Function()? onTapFav;
-  final Icon favIcon;
+  ItemModel itemModel;
 
-  const Item(
-      {super.key,
-      required this.favIcon,
-      required this.onTapFav,
-      required this.imgPath,
-      required this.itemName,
-      required this.itemPrice,
-      required this.onTap});
+  Item({required this.itemModel});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +15,7 @@ class Item extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           InkWell(
-            onTap: onTap,
+            onTap: itemModel.onTap,
             child: Container(
                 decoration: BoxDecoration(
                     boxShadow: const [
@@ -48,7 +37,7 @@ class Item extends StatelessWidget {
                           color: Colors.white54,
                           image: DecorationImage(
                               image: NetworkImage(
-                                "$imgPath",
+                                "${itemModel.imgPath}",
                               ),
                               fit: BoxFit.fill),
                           borderRadius: BorderRadius.circular(18)),
@@ -58,7 +47,7 @@ class Item extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                       child: Column(
                         children: [
-                          Text("$itemName",
+                          Text("${itemModel.itemName}",
                               style: GoogleFonts.gelasio(
                                   fontSize: 18,
                                   color: Colors.black,
@@ -72,14 +61,14 @@ class Item extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("$itemPrice Rs",
+                          Text("${itemModel.itemPrice} Rs",
                               style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500)),
                           IconButton(
-                            onPressed: onTapFav,
-                            icon: favIcon,
+                            onPressed: itemModel.onTapFav,
+                            icon: itemModel.favIcon,
                           )
                         ],
                       ),

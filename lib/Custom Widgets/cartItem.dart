@@ -1,34 +1,24 @@
+import 'package:ecomerce_app/Models/cartModel.dart';
 import 'package:flutter/material.dart';
 
 class CartItem extends StatelessWidget {
-  final String imgPath;
-  final String itemName;
-  final int itemPrice;
-  final int quantity;
-  final void Function()? deleteItem;
-  final void Function()? onTap;
+  final CartModel cartModel;
 
-  final String color;
-
-  const CartItem(
-      {super.key,
-      required this.onTap,
-      required this.color,
-      required this.quantity,
-      required this.imgPath,
-      required this.itemName,
-      required this.itemPrice,
-      required this.deleteItem});
+  const CartItem({super.key, required this.cartModel});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return InkWell(
-      onTap: onTap,
+      onTap: cartModel.onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
         child: Container(
-          height: 157,
-          width: double.infinity,
+          height: screenHeight * 0.16,
+          width: screenWidth,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             boxShadow: const [
@@ -44,19 +34,17 @@ class CartItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(
-                height: double.infinity,
-                width: 120,
+                height: screenHeight,
+                width: screenWidth * 0.3,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(11),
                   child: Image(
-                    image: NetworkImage(imgPath),
+                    image: NetworkImage(cartModel.imgPath),
                     fit: BoxFit.fill,
                   ),
                 ),
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              SizedBox(width: screenWidth*0.02,),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,32 +52,33 @@ class CartItem extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            itemName,
-                            style: const TextStyle(
-                                fontSize: 22,
+                            cartModel.itemName,
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.05,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.purple),
                           ),
                           Text(
-                            "$itemPrice Rs",
-                            style: const TextStyle(
-                                fontSize: 18,
+                            "${cartModel.itemPrice} Rs",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.045,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black54),
                           ),
                           Text(
-                            "Quantity: $quantity",
-                            style: const TextStyle(
-                                fontSize: 18,
+                            "Quantity: ${cartModel.quantity}",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.045,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black54),
                           ),
                           Text(
-                            "Color: $color",
-                            style: const TextStyle(
-                                fontSize: 18,
+                            "Color: ${cartModel.color}",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.045,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black54),
                           )
@@ -97,10 +86,10 @@ class CartItem extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: deleteItem,
+                      onPressed: cartModel.deleteItem,
                       icon: Icon(
                         Icons.delete,
-                        size: 35,
+                        size: screenWidth * 0.1,
                         color: Colors.pink[200],
                       ),
                     ),

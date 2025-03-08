@@ -1,13 +1,27 @@
 import 'package:ecomerce_app/Custom%20Widgets/favItem.dart';
+import 'package:ecomerce_app/Models/favModel.dart';
 import 'package:ecomerce_app/Pages/itemPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../Provider/provider.dart';
 
-class FavPage extends StatelessWidget {
+class FavPage extends StatefulWidget {
   const FavPage({super.key});
 
+
+  @override
+  State<FavPage> createState() => _FavPageState();
+}
+
+
+class _FavPageState extends State<FavPage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
     final listener = context.watch<ItemProvider>();
@@ -30,10 +44,7 @@ class FavPage extends StatelessWidget {
               provider.getFavStream();
               listener.getFavDocs(snapshot);
 
-
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if ( provider.favDocs.isEmpty) {
+ if ( provider.favDocs.isEmpty) {
                 return const Center(child: Text("Not items in Favourites"));
               } else {
 
@@ -42,10 +53,10 @@ class FavPage extends StatelessWidget {
                 return ListView.builder(
                     itemCount: provider.favDocs.length,
                     itemBuilder: (context, index) {
-                      return FavItem(
+                      FavModel favModel = FavModel(
                         onTap: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context){
-                            return Itempage(item: provider.favDocs[index]);
+                            return ItemPage(item: provider.favDocs[index]);
                           }));
                         },
                         color: provider.selectedColor,
@@ -56,6 +67,12 @@ class FavPage extends StatelessWidget {
                           listener.deleteFav(index);
                         },
                       );
+
+                      return FavItem(favModel);
+
+
+
+
                     });
               }
             }));

@@ -16,7 +16,7 @@ class ItemProvider extends ChangeNotifier {
     getFavStream();
     getFavItems();
     getCartStream();
-    Timer(const Duration(seconds: 1), () {
+    Timer(const Duration(microseconds: 0), () {
       FlutterNativeSplash.remove();
     });
   }
@@ -57,20 +57,20 @@ class ItemProvider extends ChangeNotifier {
       {required String email,
       required String password,
       required context}) async {
-    toggleLogin();
+    toggleLoding();
     if (email.toString() != "null" && password.toString() != "null") {
       try {
          await FirebaseAuth.instance
             .signInWithEmailAndPassword(email: email, password: password);
 
-      toggleLogin();
-      } catch (e) {
-        toggleLogin();
+      toggleLoding();
+      } on FirebaseAuthException catch (e){
+        toggleLoding();
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${e.code}")));
       }
     } else {
-      toggleLogin();
+      toggleLoding();
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Please enter all the required credentials")));
@@ -92,6 +92,7 @@ class ItemProvider extends ChangeNotifier {
         email.toString() != "null" &&
         confirmPass.toString() != "null") {
       try {
+        toggleLoding();
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password,
@@ -106,9 +107,11 @@ class ItemProvider extends ChangeNotifier {
           "address": address,
           "Phone No": phoneNo
         });
-      } catch (e) {
+        toggleLoding();
+      } on FirebaseAuthException catch (e) {
+        toggleLoding();
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(("$e"))));
+            .showSnackBar(SnackBar(content: Text(("${e.code}"))));
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -155,6 +158,8 @@ class ItemProvider extends ChangeNotifier {
 /////////////////////////////////////////HomePage Logic//////////////////////////////////////////////////////////////////////////
 
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? docs = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? filteredItems = [];
+String querry="";
   String currentCategory = "All";
 
   upCatIndex(int index) {
@@ -199,7 +204,7 @@ class ItemProvider extends ChangeNotifier {
     const Homepage(),
     const Cartpage(),
     const FavPage(),
-     const Accountpage()
+     const AccountPage()
   ];
 
   Stream<QuerySnapshot<Map<String, dynamic>>>? getStream() {
@@ -231,8 +236,24 @@ class ItemProvider extends ChangeNotifier {
   getDocs(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
     getStream()!.listen((snapshot) {
       docs = snapshot.docs;
+      if(querry == ""){
+        filteredItems = List.from(docs!);
+      }
+
     });
   }
+  void filterItems(String query) {
+    if(query.isEmpty){
+      filteredItems = List.from(docs!);
+    }else {
+      filteredItems = docs!.where((item) {
+        return item["name"].toString().toLowerCase().contains(
+            query.toLowerCase());
+      }).toList();
+    }
+   notifyListeners();
+  }
+
 
 /////////////////////////////////////////ItemPage Logic///////////////////////////////////////////////////////////////
 
@@ -430,6 +451,11 @@ class ItemProvider extends ChangeNotifier {
       });
     }
 
+
+    QueryProduct(){
+
+    }
+
   deleterCartItem(int index) async {
     String email = await getEmail("email");
     await FirebaseFirestore.instance
@@ -443,10 +469,6 @@ class ItemProvider extends ChangeNotifier {
 
 /////////////////////////////////////////SearchBar Logic/////////////////////////////////////////////////////////////////////////
 
-  String query = "";
-
-  List filteredItems = [];
-  String searchQuery = '';
 
   ///Filter Function
 //   filterFunction(String query) {
@@ -500,7 +522,7 @@ class ItemProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
-  toggleLogin(){
+  toggleLoding(){
     isLoading = !isLoading;
     notifyListeners();
 

@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ecomerce_app/Custom%20Widgets/categoryIcons.dart';
+import 'package:ecomerce_app/Models/itemModel.dart';
 import 'package:ecomerce_app/Pages/itemPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,9 @@ class Homepage extends StatelessWidget {
     final provider = context.read<ItemProvider>();
     final listener = context.watch<ItemProvider>();
 
-    provider.getStream();
+    double maxWidth = MediaQuery.of(context).size.width;
+    double maxHeight = MediaQuery.of(context).size.height;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,29 +30,30 @@ class Homepage extends StatelessWidget {
                     bottomRight: Radius.circular(13))),
             child: Column(
               children: [
-                const SizedBox(
-                  height: 50,
+                SizedBox(
+                  height: maxHeight * 0.05,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                  padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.04),
                   child: Card(
                     elevation: 2,
                     child: SizedBox(
                         width: double.infinity,
-                        height: 50,
+                        height: maxHeight * 0.06,
                         child: TextField(
                           onChanged: (value) {
-                            provider.query = value;
-                            // provider.filterFunction(provider.query.toString());
+                            listener.querry =value;
+                            listener.filterItems(listener.querry);
+
                           },
                           decoration: InputDecoration(
                             prefixIcon: IconButton(
                               icon: const Icon(Icons.search),
                               onPressed: () {},
                             ),
-                            hintText: "Search ",
-                            hintStyle: const TextStyle(
-                                fontSize: 20, color: Colors.grey),
+                            hintText: "Search",
+                            hintStyle: TextStyle(
+                                fontSize: maxWidth * 0.05, color: Colors.grey),
                             filled: true,
                             fillColor: Colors.grey.shade300,
                             border: OutlineInputBorder(
@@ -65,26 +69,25 @@ class Homepage extends StatelessWidget {
                 CarouselSlider(
                     items: provider.posters.map((item) {
                       return Container(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 10,
+                        margin: EdgeInsets.symmetric(
+                          vertical: maxHeight * 0.013,
                         ),
                         width: double.infinity,
-                        decoration: const BoxDecoration(),
                         child:
-                            Image.asset(item, fit: BoxFit.fill, width: 1000.0),
+                        Image.asset(item, fit: BoxFit.fill),
                       );
                     }).toList(),
                     options: CarouselOptions(
                       autoPlay: true,
-                      aspectRatio: 18 / 9,
+                      aspectRatio: 17 /9,
                       enlargeCenterPage: true,
-                      autoPlayInterval: const Duration(seconds: 10),
+                      autoPlayInterval: const Duration(seconds: 5),
                     ))
               ],
             ),
           ),
-          const SizedBox(
-            height: 20,
+          SizedBox(
+            height: maxHeight * 0.025,
           ),
           Container(
             decoration: BoxDecoration(
@@ -92,15 +95,18 @@ class Homepage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      vertical: maxHeight * 0.012,
+                      horizontal: maxWidth * 0.05),
                   child: Text(
                     "Categories",
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 26),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: maxWidth * 0.07),
                   ),
                 ),
                 SizedBox(
-                  height: 100,
+                  height: maxHeight * 0.12,
                   child: ListView.builder(
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
@@ -120,55 +126,56 @@ class Homepage extends StatelessWidget {
                 StreamBuilder(
                     stream: provider.getStream(),
                     builder: (context, snapshot) {
-                      provider.getDocs(snapshot);
+                      provider.getStream();
+                      listener.getDocs(snapshot);
 
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else {
-                        return GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: provider.docs!.length,
-                          itemBuilder: (context, index) {
-                            listener.checkFav(provider.docs![index]);
-                            return Item(
-                                favIcon:
-                                    provider.checkFav(provider.docs![index])
-                                        ? const Icon(
-                                            Icons.favorite,
-                                            color: Colors.red,
-                                            size: 30,
-                                          )
-                                        : const Icon(
-                                            Icons.favorite_outline,
-                                            color: Colors.black,
-                                            size: 30,
-                                          ),
-                                onTapFav: () {
-                                  listener.favToggle(provider.docs![index]);
-                                },
-                                onTap: () {
-                                  provider.changeColor(index: 0);
-                                  provider.selectedColor = "White";
 
-                                  provider.quantity = 1;
-                                  Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return Itempage(
-                                        item: provider.docs![index]);
-                                  }));
-                                },
-                                itemPrice: provider.docs![index]["price"],
-                                itemName: provider.docs![index]["name"],
-                                imgPath: provider.docs![index]["imageUrl"]);
-                          },
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 165 / 230,
-                          ),
-                        );
-                      }
+                      return GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+
+                        itemCount: provider.filteredItems!.length,
+                        itemBuilder: (context, index) {
+                          listener.checkFav(provider.filteredItems![index]);
+
+                          ItemModel itemModel = ItemModel(
+                              favIcon: provider.checkFav(provider.filteredItems![index])
+                                  ? const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                                size: 30,
+                              )
+                                  : const Icon(
+                                Icons.favorite_outline,
+                                color: Colors.black,
+                                size: 30,
+                              ),
+                              onTapFav: () {
+                                listener.favToggle(provider.filteredItems![index]);
+                              },
+                              onTap: () {
+                                provider.changeColor(index: 0);
+                                provider.selectedColor = "White";
+
+                                provider.quantity = 1;
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return ItemPage(item: provider.filteredItems![index]);
+                                    }));
+                              },
+                              itemPrice: provider.filteredItems![index]["price"],
+                              itemName: provider.filteredItems![index]["name"],
+                              imgPath: provider.filteredItems![index]["imageUrl"]
+                          );
+                          return Item(itemModel: itemModel);
+                        },
+                        gridDelegate:
+                         SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+crossAxisSpacing: 3,
+mainAxisSpacing: 3,                          childAspectRatio: maxWidth*0.04  / maxHeight/0.030,
+                        ),
+                      );
                     })
               ],
             ),

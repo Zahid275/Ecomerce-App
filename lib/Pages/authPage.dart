@@ -10,265 +10,183 @@ class AuthPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.read<ItemProvider>();
     final listener = context.watch<ItemProvider>();
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Center(
-          child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: SizedBox(
-                  width: 250,
-                  height: 100,
-                  child: Image.asset("assets/logo/logo_withoutBack.png")),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            Padding(
-                padding: const EdgeInsets.only(left: 20.0),
-                child: provider.isSignUp
-                    ? const Text(
-                        "Sign Up",
-                        style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.deepPurple),
-                      )
-                    : const Text(
-                        "Sign In",
-                        style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.deepPurple),
-                      )),
-            const SizedBox(
-              height: 26,
-            ),
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  provider.isSignUp
-                      ? cusTomTextField(
-                          onChanged: (value) {
-                            provider.name = value.toString();
-                          },
-                          label: "Username",
-                          prefixIcon: Icons.person_outline,
-                  )
-                      :
-                  Container(),
-                  provider.isSignUp
-                      ? const SizedBox(
-                          height: 20,
-                        )
-                      : const SizedBox(),
-                  cusTomTextField(
-                      onChanged: (value) {
-                        provider.email = value.toString();
-                      },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: size.height * 0.02),
+              Center(
+                child: SizedBox(
+                  width: size.width * 0.5,
+                  height: size.height * 0.15,
+                  child: Image.asset("assets/logo/logo_withoutBack.png"),
+                ),
+              ),
+              SizedBox(height: size.height * 0.03),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  provider.isSignUp ? "Sign Up" : "Sign In",
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+              ),
+              SizedBox(height: size.height * 0.03),
+              Center(
+                child: Column(
+                  children: [
+                    if (provider.isSignUp)
+                      cusTomTextField(
+                        onChanged: (value) => provider.name = value,
+                        label: "Username",
+                        prefixIcon: Icons.person_outline,
+                      ),
+                    SizedBox(height: size.height * 0.02),
+                    cusTomTextField(
+                      onChanged: (value) => provider.email = value,
                       label: "Email",
-                      prefixIcon: Icons.person_outline,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  cusTomTextField(
-                    obsecure: provider.obsecureTextPass,
-                      onChanged: (value) {
-                        provider.password = value.toString();
-                      },
+                      prefixIcon: Icons.email_outlined,
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    cusTomTextField(
+                      obsecure: provider.obsecureTextPass,
+                      onChanged: (value) => provider.password = value,
                       label: "Password",
                       prefixIcon: Icons.lock_outline,
-                      suffixIcon: IconButton(onPressed: (){
-                        listener.togglePassIcon();
-                      },
-                          icon: provider.obsecureTextPass ?const Icon(Icons.remove_red_eye):const Icon(Icons.remove_red_eye_outlined)
-
-
-                      )
+                      suffixIcon: IconButton(
+                        onPressed: listener.togglePassIcon,
+                        icon: Icon(provider.obsecureTextPass
+                            ? Icons.visibility
+                            : Icons.visibility_off),
                       ),
-                  provider.isSignUp
-                      ? const SizedBox(
-                          height: 20,
-                        )
-                      : const SizedBox(),
-                  provider.isSignUp
-                      ? cusTomTextField(
-                    obsecure: listener.obsecureTextCon,
-                          onChanged: (value) {
-                            provider.confirmPass = value.toString();
-                          },
-                          label: "Confirm Password",
-                          prefixIcon: Icons.lock_outline,
-                          suffixIcon: IconButton(onPressed: (){
-                            listener.toggleConfirmPassIcon();
-                          },
-                              icon: provider.obsecureTextCon ?const Icon(Icons.remove_red_eye):const Icon(Icons.remove_red_eye_outlined)
-
-
-                          ))
-                      : Container(),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  provider.isSignUp
-                      ? cusTomTextField(
-                          onChanged: (value) {
-                            provider.phoneNO = value.toString();
-                          },
-                          label: "Phone No",
-                          prefixIcon: Icons.person_outline,
-                  )
-                      : Container(),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  provider.isSignUp
-                      ? cusTomTextField(
-                          onChanged: (value) {
-                            provider.address = value.toString();
-                          },
-                          label: "Address",
-                          prefixIcon: Icons.person_outline,
-                  )
-                      : Container(),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 20.0, top: 10),
+                    ),
+                    if (provider.isSignUp) ...[
+                      SizedBox(height: size.height * 0.02),
+                      cusTomTextField(
+                        obsecure: listener.obsecureTextCon,
+                        onChanged: (value) => provider.confirmPass = value,
+                        label: "Confirm Password",
+                        prefixIcon: Icons.lock_outline,
+                        suffixIcon: IconButton(
+                          onPressed: listener.toggleConfirmPassIcon,
+                          icon: Icon(provider.obsecureTextCon
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      cusTomTextField(
+                        onChanged: (value) => provider.phoneNO = value,
+                        label: "Phone No",
+                        prefixIcon: Icons.phone,
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      cusTomTextField(
+                        onChanged: (value) => provider.address = value,
+                        label: "Address",
+                        prefixIcon: Icons.home,
+                      ),
+                    ],
+                    Align(
+                      alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
                         child: Text(
                           "Forget Password",
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.deepPurple.shade500),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.deepPurple.shade500,
+                          ),
                         ),
                       ),
-                    )
-                  ]),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  SizedBox(
+                    ),
+                    SizedBox(height: size.height * 0.02),
+                    SizedBox(
                       width: double.infinity,
-                      child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 50.0),
-                          child: provider.isSignUp
-                              ? ElevatedButton(
-                                  onPressed: () {
-                                    provider.signUp(
-                                        address: provider.address.toString(),
-                                        phoneNo: provider.phoneNO.toString(),
-                                        context: context,
-                                        name: provider.name.toString(),
-                                        confirmPass:
-                                            provider.confirmPass.toString(),
-                                        email: provider.email.toString(),
-                                        password: provider.password.toString());
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      elevation: 5,
-                                      backgroundColor:
-                                          Colors.deepPurple.shade300),
-                                  child: const Text(
-                                    "Sign Up",
-                                    style: TextStyle(color: Colors.white),
-                                  ))
-                              : ElevatedButton(
-                                  onPressed: () {
-                                    provider.signIn(
-                                        password: provider.password.toString(),
-                                        email: provider.email.toString(),
-                                        context: context);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      elevation: 5,
-                                      backgroundColor:
-                                          Colors.deepPurple.shade300),
-                                  child: const Text(
-                                    "Sign In",
-                                    style: TextStyle(color: Colors.white),
-                                  )))),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  provider.isSignUp == false
-                      ? TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            "Or sign in With",
-                            style: TextStyle(
-                                color: Colors.deepPurple.shade300,
-                                fontWeight: FontWeight.w700),
+                      child: ElevatedButton(
+                        onPressed: provider.isSignUp
+                            ? () => provider.signUp(
+                          address: provider.address!,
+                          phoneNo: provider.phoneNO!,
+                          context: context,
+                          name: provider.name!,
+                          confirmPass: provider.confirmPass!,
+                          email: provider.email!,
+                          password: provider.password!,
+                        )
+                            : () => provider.signIn(
+                          password: provider.password!,
+                          email: provider.email!,
+                          context: context,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        )
-                      : Container(),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  provider.isSignUp == false
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            provider.socialButton(
-                                imgPath: "assets/logo/socialLogos/google.png"),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            provider.socialButton(
-                                imgPath: "assets/logo/socialLogos/fb.png"),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            provider.socialButton(
-                                imgPath: "assets/logo/socialLogos/twitter.png"),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            provider.socialButton(
-                                imgPath: "assets/logo/socialLogos/in.png"),
-                          ],
-                        )
-                      : Container(),
-                  TextButton(
-                      onPressed: () {
-                        listener.toggleSignUp();
-                      },
-                      child: provider.isSignUp
-                          ? Text(
-                              "Already have an account! Sign in",
-                              style: TextStyle(
-                                  color: Colors.deepPurple.shade300,
-                                  fontWeight: FontWeight.w700),
-                            )
-                          : Text(
-                              "Dont't have an account! Sign Up",
-                              style: TextStyle(
-                                  color: Colors.deepPurple.shade300,
-                                  fontWeight: FontWeight.w700),
-                            )),
-                  listener.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : Container()
-                ],
+                          elevation: 5,
+                          backgroundColor: Colors.deepPurple.shade300,
+                        ),
+                        child: Text(
+                          provider.isSignUp ? "Sign Up" : "Sign In",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    if (!provider.isSignUp) ...[
+                      SizedBox(height: size.height * 0.02),
+                      Text(
+                        "Or sign in With",
+                        style: TextStyle(
+                          color: Colors.deepPurple.shade300,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 16,
+                        children: [
+                          provider.socialButton(
+                              imgPath: "assets/logo/socialLogos/google.png"),
+                          provider.socialButton(
+                              imgPath: "assets/logo/socialLogos/fb.png"),
+                          provider.socialButton(
+                              imgPath: "assets/logo/socialLogos/twitter.png"),
+                          provider.socialButton(
+                              imgPath: "assets/logo/socialLogos/in.png"),
+                        ],
+                      ),
+                    ],
+                    TextButton(
+                      onPressed: listener.toggleSignUp,
+                      child: Text(
+                        provider.isSignUp
+                            ? "Already have an account? Sign in"
+                            : "Don't have an account? Sign Up",
+                        style: TextStyle(
+                          color: Colors.deepPurple.shade300,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    if (listener.isLoading)
+                      const Center(child: CircularProgressIndicator()),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 }
-//
