@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "243668501163",
+    "project_id": "ecomerce-app-10a8a",
+    "storage_bucket": "ecomerce-app-10a8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243668501163:android:c477d68a8a24c9c6fdedee",
+        "android_client_info": {
+          "package_name": "com.chitchat.chit_chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4FXFvgLFyDqSDOsrmmK5hU0VemTaqtW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243668501163:android:94f9e7f7abf1afadfdedee",
+        "android_client_info": {
+          "package_name": "com.example.ecomerce_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4FXFvgLFyDqSDOsrmmK5hU0VemTaqtW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243668501163:android:69c48d485cca36e9fdedee",
+        "android_client_info": {
+          "package_name": "com.example.ecomerce_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4FXFvgLFyDqSDOsrmmK5hU0VemTaqtW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
