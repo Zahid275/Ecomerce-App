@@ -1,16 +1,37 @@
-# ecomerce_application
+# 🛒 Z-Tech E-Commerce App
 
-A new Flutter project.
+A sleek and modern **E-Commerce** app built with **Flutter**, powered by **Firebase** 🔥 and **Cloudinary** ☁️ for image hosting.  
+Focused on **electronics** ⚡, it delivers a smooth shopping experience with smart features and a clean design.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features
+- 🔍 **Smart Search** — Quickly find your desired products.
+- 📂 **Categorized Browsing** — Explore electronics by categories.
+- 🛍 **Cart Management** — Add, view, and manage your cart items.
+- ❤️ **Favorites** — Save products for later.
+- 🔑 **Firebase Authentication** — Secure login & signup.
+- 🎯 **Provider** for efficient state management.
+- 🎨 **Clean UI/UX** — Simple, modern, and user-friendly design.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠 Tech Stack
+- **Flutter** 💙 — Cross-platform mobile app framework.
+- **Firebase** 🔥 — Authentication & database.
+- **Cloudinary** ☁️ — Image hosting & optimization.
+- **Provider** 🪄 — State management.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Screenshots
+
+### 🛍 Main Screens
+| Home | Product Details | Cart | Favorites | Account |  
+|------|-----------------|------|-----------|---------|  
+| <img src="screenshots/home_page.png" width="200"/> | <img src="screenshots/product_details.png" width="200"/> | <img src="screenshots/cart_screen.png" width="200"/> | <img src="screenshots/fav_screen.png" width="200"/> | <img src="screenshots/account_screen.png" width="200"/> |  
+
+---
+
+### 🔑 Auth Screens
+| Login | Signup |  
+|-------|--------|  
+| <img src="screenshots/login_screen.png" width="200"/> | <img src="screenshots/signup_screen.png" width="200"/> |
