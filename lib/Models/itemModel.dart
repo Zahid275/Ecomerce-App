@@ -5,7 +5,7 @@ final String? itemName;
 final int? itemPrice;
 final void Function()? onTap;
 final void Function()? onTapFav;
-final Icon favIcon;
+final Widget favIcon;
 
 const ItemModel(
     {

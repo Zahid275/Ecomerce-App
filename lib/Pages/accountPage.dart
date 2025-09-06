@@ -1,6 +1,6 @@
 import 'package:ecomerce_application/Custom%20Widgets/customContainer.dart';
-import 'package:ecomerce_application/Provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ecomerce_application/Provider/account_Provider.dart';
+import 'package:ecomerce_application/Provider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +10,7 @@ class AccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<ItemProvider>();
-    final listener = context.watch<ItemProvider>();
+    final provider = context.read<AccountProvider>();
 
     final size = MediaQuery.of(context).size;
     final maxWidth = size.width;
@@ -32,15 +31,12 @@ class AccountPage extends StatelessWidget {
             StreamBuilder(
               stream: provider.getUserStream(),
               builder: (context, snapshot) {
-                provider.getUserStream();
-                listener.getUserDocs(snapshot);
+                provider.getUserDocs(snapshot);
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox(
-                    height: maxHeight * 0.2,
-                    child: const Center(child: CircularProgressIndicator()),
+                  return const SizedBox(
                   );
-                }
+                }else{
 
                 return Column(
                   children: [
@@ -57,10 +53,10 @@ class AccountPage extends StatelessWidget {
                     SizedBox(height: maxHeight * 0.02),
                     Text("Edit Image", style: TextStyle(fontSize: 20, color: Colors.deepPurple.shade900)),
                     SizedBox(height: maxHeight * 0.02),
-                    customContainer(text: "Name: ${provider.userDocs?["name"] ?? ""}"),
-                    customContainer(text: "Email: ${provider.userDocs?["email"] ?? ""}"),
-                    customContainer(text: "Password: ${provider.userDocs?["password"] ?? ""}"),
-                    customContainer(text: "Phone No: ${provider.userDocs?["Phone No"] ?? ""}"),
+                    customContainer(context: context,text: "Name: ${provider.userDocs?["name"] ?? ""}"),
+                    customContainer(context: context,text: "Email: ${provider.userDocs?["email"] ?? ""}"),
+                    customContainer(context: context,text: "Password: ${provider.userDocs?["password"] ?? ""}"),
+                    customContainer(context: context,text: "Phone No: ${provider.userDocs?["Phone No"] ?? ""}"),
                     SizedBox(height: maxHeight * 0.02),
                     Text(
                       "Address : ${provider.userDocs?["address"] ?? ""}",
@@ -70,9 +66,7 @@ class AccountPage extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () async{
                         try {
-                          provider.clearCredentials();
-                          provider.currentIndex = 0;
-                         await  FirebaseAuth.instance.signOut();
+                      Provider.of<Authentication_Provider>(context,listen: false).signOut(context);
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text("$e Failed to Sign Out")),
@@ -82,7 +76,7 @@ class AccountPage extends StatelessWidget {
                       child: const Text("Sign Out"),
                     ),
                   ],
-                );
+                );  }
               },
             ),
           ],

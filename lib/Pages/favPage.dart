@@ -1,71 +1,64 @@
 import 'package:ecomerce_application/Custom%20Widgets/favItem.dart';
 import 'package:ecomerce_application/Models/favModel.dart';
 import 'package:ecomerce_application/Pages/itemPage.dart';
+import 'package:ecomerce_application/Provider/favProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../Provider/provider.dart';
-
-class FavPage extends StatefulWidget {
+class FavPage extends StatelessWidget {
   const FavPage({super.key});
 
   @override
-  State<FavPage> createState() => _FavPageState();
-}
-
-class _FavPageState extends State<FavPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final listener = context.watch<ItemProvider>();
-    final provider = context.read<ItemProvider>();
-
+    final provider = Provider.of<FavProvider>(context, listen: false);
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Favourite items",
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          automaticallyImplyLeading: false,
+      appBar: AppBar(
+        title: const Text(
+          "Favourite items",
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),
         ),
-        body: StreamBuilder(
-            stream: provider.favStream,
-            builder: (context, snapshot) {
-              provider.getFavStream();
-              listener.getFavDocs(snapshot);
+        automaticallyImplyLeading: false,
+      ),
+      body: StreamBuilder(
+        stream: provider.getFavStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox();
+          }else if(snapshot.data!.docs.isEmpty){
+            return const Center(child: Text("No items in Favourites"),);
+          }
+          else {
+            provider.favDocs  = snapshot.data!.docs;
 
-              if (provider.favDocs.isEmpty) {
-                return const Center(child: Text("Not items in Favourites"));
-              } else {
-                return ListView.builder(
-                    itemCount: provider.favDocs.length,
-                    itemBuilder: (context, index) {
-                      FavModel favModel = FavModel(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return ItemPage(item: provider.favDocs[index]);
-                          }));
+            return ListView.builder(
+              itemCount: provider.favDocs.length,
+              itemBuilder: (context, index) {
+                FavModel favModel = FavModel(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ItemPage(item: provider.favDocs[index]);
                         },
-                        color: provider.selectedColor,
-                        itemPrice: provider.favDocs[index]["price"],
-                        imgPath: provider.favDocs[index]["imageUrl"],
-                        itemName: '${provider.favDocs[index]["name"]}',
-                        deleteItem: () {
-                          listener.deleteFav(index);
-                        },
-                      );
+                      ),
+                    );
+                  },
+                  color: provider.favDocs[index]["color"],
+                  itemPrice: provider.favDocs[index]["price"],
+                  imgPath: provider.favDocs[index]["imageUrl"],
+                  itemName: '${provider.favDocs[index]["name"]}',
+                  deleteItem: () {
+                    provider.deleteFav(provider.favDocs[index]["name"],context: context);
+                  },
+                );
 
-                      return FavItem(favModel);
-                    });
-              }
-            }));
+                return FavItem(favModel);
+              },
+            );
+          }
+        },
+      ),
+    );
   }
 }

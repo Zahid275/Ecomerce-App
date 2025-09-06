@@ -1,4 +1,4 @@
-import 'package:ecomerce_application/Provider/provider.dart';
+import 'package:ecomerce_application/Provider/homepage_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +10,9 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ItemProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
+    final provider = Provider.of<HomePage_Provider>(context, listen: false);
+
+    return  Scaffold(
 
             backgroundColor: Colors.grey.shade300,
             bottomNavigationBar: Container(
@@ -22,7 +22,6 @@ class Home extends StatelessWidget {
 
               child: GNav(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                rippleColor: Colors.white54,
                 gap: 5,
                 tabBorderRadius: 30,
                 iconSize: 30,
@@ -48,14 +47,20 @@ class Home extends StatelessWidget {
                     text: "Profile",
                   ),
                 ],
-                selectedIndex: provider.currentIndex,
+
+                selectedIndex: Provider.of<HomePage_Provider>(context,listen: false).currentIndex,
                 onTabChange: (value) {
-                  provider.onChanged(value);
+                  Provider.of<HomePage_Provider>(context,listen: false).onChanged(value);
                 },
               ),
             ),
-            body: provider.pages[provider.currentIndex]);
-      },
+            body: Consumer<HomePage_Provider>(builder: (context,listener,child){
+              return provider.pages[provider.currentIndex];
+            })
+
+
     );
+
+
   }
 }

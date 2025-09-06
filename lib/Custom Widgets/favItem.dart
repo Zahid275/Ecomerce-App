@@ -5,24 +5,25 @@ import '../Models/favModel.dart';
 class FavItem extends StatelessWidget {
   FavModel favModel;
 
-  FavItem(this.favModel);
+  FavItem(this.favModel, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return InkWell(
       onTap: favModel.onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding:  EdgeInsets.symmetric(horizontal: screenWidth*0.05, vertical: screenHeight*0.014),
         child: Container(
-          height: 125,
+          height: screenHeight*0.15,
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             boxShadow: const [
               BoxShadow(
-                  offset: Offset(5, 5),
-                  blurRadius: 2,
-                  spreadRadius: 1,
+                  blurRadius: 4,
+                  spreadRadius: 0,
                   color: Colors.black54)
             ],
             color: Colors.deepPurple[100],
